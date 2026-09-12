@@ -1,4 +1,5 @@
 import { Decimal } from 'decimal.js';
+import { confirm, input, select } from '@inquirer/prompts';
 import { getAddress } from 'viem';
 
 import { ASSETS } from '../config/assets.js';
@@ -6,6 +7,8 @@ import { CHAINS } from '../config/chains.js';
 import type { PlanV1 } from '../domain/schemas.js';
 import type { PlanOptions } from './plan.js';
 import type { PlanReport } from '../reporting/console.js';
+import { executeWithLiveProviders } from './execute.js';
+import { runPlanWithLiveProviders } from './live-plan.js';
 
 export type WizardLanguage = 'en' | 'vi';
 
@@ -35,6 +38,7 @@ export interface WizardDependencies {
 }
 
 export type WizardResult = 'EXECUTED' | 'NO_ROUTES' | 'PLAN_SAVED';
+export type SafeWizardResult = WizardResult | 'CANCELLED';
 
 interface WizardMessages {
   chain: string;
@@ -174,4 +178,39 @@ export async function runWizard(dependencies: WizardDependencies): Promise<Wizar
   }
   await dependencies.execute(result.plan, journal);
   return 'EXECUTED';
+}
+
+export async function runWizardSafely(
+  run: () => Promise<WizardResult>,
+  write: (message: string) => void,
+): Promise<SafeWizardResult> {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof Error && error.name === 'ExitPromptError') {
+      write('Cancelled.');
+      return 'CANCELLED';
+    }
+    throw error;
+  }
+}
+
+const inquirerPrompts: WizardPrompts = {
+  confirm: (options) => confirm(options),
+  input: (options) => input(options),
+  select: <Value extends string>(options: {
+    choices: readonly WizardChoice<Value>[];
+    message: string;
+  }) => select<Value>({ choices: [...options.choices], message: options.message }),
+};
+
+export async function runLiveWizard(
+  dependencies: WizardDependencies = {
+    execute: executeWithLiveProviders,
+    plan: runPlanWithLiveProviders,
+    prompts: inquirerPrompts,
+    write: console.log,
+  },
+): Promise<SafeWizardResult> {
+  return runWizardSafely(() => runWizard(dependencies), dependencies.write);
 }
