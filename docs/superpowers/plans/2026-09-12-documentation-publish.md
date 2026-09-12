@@ -138,7 +138,7 @@ Create a valid standalone document beginning with `<!doctype html>` and `lang="v
 
 Write Vietnamese instructions for a dedicated canary wallet, Node.js 22+, installation, optional API/RPC configuration, `plan`, review, `execute`, and `resume`. Reuse exactly the commands listed in Task 1. Clearly explain that the page is documentation only: it does not accept a key, connect a wallet, call an API, or execute a transaction.
 
-For plan review, explain `FULL`, `PARTIAL`, and `ALLOWLIST_ONLY` discovery implications; source/destination assets; tool IDs; estimated gas and net USD output; minimum receive; warnings and skip reasons. For execution, state that the user types `EXECUTE` before the masked key prompt, the signer address must match the planned wallet, approvals are exact, routes run sequentially, and files must be preserved. For resume, explain that `BRIDGE_PENDING` does not resubmit the source transaction.
+For plan review, explain `INDEXED`, `PARTIAL`, and `ALLOWLIST_ONLY` discovery implications; source/destination assets; tool IDs; estimated gas and net USD output; minimum receive; warnings and skip reasons. For execution, state that the user types `EXECUTE` before the masked key prompt, the signer address must match the planned wallet, approvals are exact, routes run sequentially, and files must be preserved. For resume, explain that `BRIDGE_PENDING` does not resubmit the source transaction.
 
 - [ ] **Step 2: Add the responsive visual system inline**
 
