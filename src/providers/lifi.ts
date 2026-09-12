@@ -32,7 +32,11 @@ const stepSchema = z
     id: z.string().min(1),
     tool: z.string().min(1),
     estimate: z
-      .object({ gasCosts: z.array(costSchema), feeCosts: z.array(costSchema) })
+      .object({
+        approvalAddress: addressSchema.optional(),
+        gasCosts: z.array(costSchema),
+        feeCosts: z.array(costSchema),
+      })
       .passthrough(),
     includedSteps: z.array(z.object({ tool: z.string().min(1) }).passthrough()),
     transactionRequest: transactionSchema,
@@ -99,6 +103,9 @@ export function normalizeLifiRoutes(input: unknown): NormalizedRoute[] {
       toAsset: assetId(route.toChainId, route.toToken.address),
       toolIds: [...new Set([step.tool, ...step.includedSteps.map(({ tool }) => tool)])],
       transaction: {
+        ...(step.estimate.approvalAddress
+          ? { approvalAddress: getAddress(step.estimate.approvalAddress) }
+          : {}),
         chainId: step.transactionRequest.chainId,
         data: step.transactionRequest.data as Hex,
         from: getAddress(step.transactionRequest.from),

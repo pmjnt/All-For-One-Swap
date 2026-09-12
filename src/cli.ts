@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { pathToFileURL } from 'node:url';
 
 import { runPlan } from './cli/plan.js';
+import { executeWithLiveProviders, runExecute } from './cli/execute.js';
 import { readRuntimeEnvironment } from './config/env.js';
 import { createAlchemyPortfolioProvider } from './providers/alchemy.js';
 import { discoverAssets } from './providers/discovery.js';
@@ -10,6 +11,7 @@ import { createLifiPriceProvider } from './providers/pricing.js';
 import { createRegistryRpcReader, registryAssetIds } from './providers/rpc.js';
 import { reportPlan } from './reporting/console.js';
 import { savePlan } from './storage/plan-store.js';
+import { loadPlan } from './storage/plan-store.js';
 
 export function buildCli(): Command {
   const cli = new Command().name('all-for-one');
@@ -49,7 +51,16 @@ export function buildCli(): Command {
         save: savePlan,
       });
     });
-  cli.command('execute');
+  cli
+    .command('execute')
+    .requiredOption('--plan <path>')
+    .option('--journal <path>', 'execution journal output path', 'journal.json')
+    .action(async (options: { journal: string; plan: string }) => {
+      await runExecute(options, {
+        execute: executeWithLiveProviders,
+        load: loadPlan,
+      });
+    });
   cli.command('resume');
 
   return cli;

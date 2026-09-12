@@ -868,7 +868,7 @@ git commit -m "feat: add read-only consolidation planning"
 - Create: `tests/execution/executor.test.ts`
 - Create: `tests/cli/execute.test.ts`
 
-- [ ] **Step 1: Write failing safety-gate tests**
+- [x] **Step 1: Write failing safety-gate tests**
 
 ```ts
 // tests/execution/executor.test.ts
@@ -887,25 +887,25 @@ it('refreshes every route before prompting and stops on one invalid route', asyn
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/execution tests/cli/execute.test.ts`
 
 Expected: FAIL because execution modules do not exist.
 
-- [ ] **Step 3: Implement preflight and exact approval construction**
+- [x] **Step 3: Implement preflight and exact approval construction**
 
 For every route, refresh balance, nonce, gas, native USD price, LI.FI quote, and transaction data; rerun route and transaction policy; verify bytecode using `getCode`; simulate from the planned signer with `call`; estimate gas; and recalculate profitability. Abort the entire batch before confirmation if any route is invalid or materially changed.
 
 Construct ERC-20 approval calls with `encodeFunctionData()` and the standard `approve(address,uint256)` ABI. Approval amount equals refreshed input amount. Reject `maxUint256`. When non-zero allowance cannot be changed directly, add `approve(spender, 0)` followed by the exact approval and include both gas estimates before profitability confirmation.
 
-- [ ] **Step 4: Implement one confirmation and sequential execution**
+- [x] **Step 4: Implement one confirmation and sequential execution**
 
 `execute` requires an interactive TTY, prints the refreshed diff and maximum/minimum values, asks exactly `Execute N routes? Type EXECUTE to continue`, then calls `readSigner()`. Before each signature, rerun simulation and compare nonce/balance. Submit, atomically journal the hash, wait for configured confirmations, and stop the whole batch on revert or invariant violation. Handle `SIGINT` by stopping before the next signature and flushing the journal.
 
 Extend `tests/support/factories.ts` with the four helpers imported by the execution test. They must return schema-valid values and fully typed injected dependencies; `invalidRefresh(code)` changes only the validity result so the test proves the all-route gate.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `npx vitest run tests/execution tests/cli/execute.test.ts tests/security tests/policy && npm run typecheck`
 
