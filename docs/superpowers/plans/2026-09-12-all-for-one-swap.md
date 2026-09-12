@@ -631,7 +631,7 @@ git commit -m "feat: add untrusted LI.FI route adapter"
 - Create: `tests/policy/validate-transaction.test.ts`
 - Create: `tests/fixtures/adversarial/`
 
-- [ ] **Step 1: Write the adversarial rejection table**
+- [x] **Step 1: Write the adversarial rejection table**
 
 ```ts
 // tests/policy/validate-transaction.test.ts
@@ -653,13 +653,13 @@ describe.each([
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/policy`
 
 Expected: FAIL because policy modules and route builders do not exist.
 
-- [ ] **Step 3: Implement deterministic policy checks**
+- [x] **Step 3: Implement deterministic policy checks**
 
 Decode the first four calldata bytes and dispatch only to ABIs pinned beside each allowed selector. Return a normalized decoded intent containing receiver, source token, source amount, destination chain, destination token/minimum amount, bridge tool, swap tools, deadline, and native value purpose. Reject unsupported overloads and undecoded trailing route data.
 
@@ -667,11 +667,11 @@ Decode the first four calldata bytes and dispatch only to ABIs pinned beside eac
 
 Use discriminated error codes such as `UNKNOWN_ASSET`, `UNKNOWN_TOOL`, `UNKNOWN_ENTRYPOINT`, `UNKNOWN_SELECTOR`, `RECIPIENT_MISMATCH`, `CHAIN_MISMATCH`, `UNLIMITED_APPROVAL`, and `VALUE_EXCEEDS_PLAN`; reporter output depends on these stable codes.
 
-- [ ] **Step 4: Add all required malicious fixtures**
+- [x] **Step 4: Add all required malicious fixtures**
 
 Fixtures must cover wrong recipient, wrong chain ID, unknown router, unknown bridge, unknown intermediate asset, symbol spoofing, unlimited approval, altered amount, altered calldata, excessive native value, expired quote, and opaque call shape. Each fixture has one test asserting its exact rejection code.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `npx vitest run tests/policy && npm run typecheck`
 
