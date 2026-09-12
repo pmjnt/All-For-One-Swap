@@ -690,7 +690,7 @@ git commit -m "feat: reject untrusted routes and calldata"
 - Create: `tests/planning/economics.test.ts`
 - Create: `tests/planning/planner.test.ts`
 
-- [ ] **Step 1: Write failing fee and boundary tests**
+- [x] **Step 1: Write failing fee and boundary tests**
 
 ```ts
 // tests/planning/economics.test.ts
@@ -706,13 +706,13 @@ it('subtracts a non-deducted explicit fee once', () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/planning`
 
 Expected: FAIL because planning modules do not exist.
 
-- [ ] **Step 3: Implement exact decimal economics and route ranking**
+- [x] **Step 3: Implement exact decimal economics and route ranking**
 
 ```ts
 // src/planning/economics.ts
@@ -733,11 +733,11 @@ export function netOutputUsd(input: {
 
 `planner.ts` assigns one stable result per holding: `READY` with best route or `SKIPPED` with `UNKNOWN_ASSET`, `UNSUPPORTED_BEHAVIOR`, `MISSING_PRICE`, `INSUFFICIENT_GAS`, `NO_ALLOWED_ROUTE`, `PRICE_IMPACT`, or `BELOW_MIN_NET_USD`. Rank only routes passing policy. For native inputs, subtract estimated maximum gas plus the chain buffer from spendable balance and reject a zero/negative remainder.
 
-- [ ] **Step 4: Add property tests**
+- [x] **Step 4: Add property tests**
 
 Use `fast-check` integer cents to prove that increasing gas never increases net output, deducted fees are never counted twice, a selected route has maximal net output among valid candidates, and native spend plus reserve never exceeds balance.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `npx vitest run tests/planning && npm run typecheck`
 
