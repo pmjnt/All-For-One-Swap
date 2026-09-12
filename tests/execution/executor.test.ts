@@ -75,4 +75,22 @@ describe('executeBatch', () => {
     });
     expect(snapshots).toContain('123');
   });
+
+  it('never submits a route whose pre-broadcast simulation fails', async () => {
+    const submit = vi.fn();
+    const wait = vi.fn();
+
+    await expect(executeBatch(validPlan({ routes: [planWithTwoRoutes().routes[0]!] }), {
+      confirm: async () => 'EXECUTE',
+      now: () => Date.parse('2026-09-12T00:00:00.000Z'),
+      persistJournal: vi.fn(async () => undefined),
+      readSigner: async () => ({}),
+      refresh: async () => ({ valid: true, route: validRoute() }),
+      recheck: async () => { throw new Error('SIMULATION_FAILED'); },
+      submit,
+      wait,
+    })).rejects.toThrow('SIMULATION_FAILED');
+    expect(submit).not.toHaveBeenCalled();
+    expect(wait).not.toHaveBeenCalled();
+  });
 });

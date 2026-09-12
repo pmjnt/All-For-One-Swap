@@ -24,6 +24,21 @@ describe('simulateCandidate', () => {
     };
     await expect(simulateCandidate(client, validRoute().transaction)).rejects.toThrow('bytecode');
   });
+
+  it('stops before gas and nonce reads when eth_call fails', async () => {
+    const client = {
+      call: vi.fn(async () => { throw new Error('SIMULATION_FAILED'); }),
+      estimateGas: vi.fn(async () => 200_000n),
+      getBalance: vi.fn(async () => 1_000_000n),
+      getBytecode: vi.fn(async () => '0x1234' as const),
+      getTransactionCount: vi.fn(async () => 7),
+    };
+
+    await expect(simulateCandidate(client, validRoute().transaction))
+      .rejects.toThrow('SIMULATION_FAILED');
+    expect(client.estimateGas).not.toHaveBeenCalled();
+    expect(client.getTransactionCount).not.toHaveBeenCalled();
+  });
 });
 
 describe('buildExactApprovalCalls', () => {
