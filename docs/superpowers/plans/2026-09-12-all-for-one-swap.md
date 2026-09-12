@@ -991,7 +991,7 @@ git commit -m "feat: monitor bridges and resume idempotently"
 - Create: `README.md`
 - Create: `docs/operations.md`
 
-- [ ] **Step 1: Write failing output and leak tests**
+- [x] **Step 1: Write failing output and leak tests**
 
 ```ts
 // tests/security/log-leak.test.ts
@@ -1009,23 +1009,23 @@ it('never renders secrets from nested provider errors', () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/reporting tests/security/log-leak.test.ts`
 
 Expected: FAIL until all reporter paths call `redact()`.
 
-- [ ] **Step 3: Finish stable human and JSON reporting**
+- [x] **Step 3: Finish stable human and JSON reporting**
 
 Render one row per holding with chain, exact contract abbreviation, balance, USD observation time, classification, route tools, gas, fees, net output, minimum receive, and stable reason code. Print discovery status and every incomplete chain above the table. Execution output includes explorer-linked hashes and the final state; pending routes include the exact `resume` command. `--json` emits the strict schema and writes diagnostics to stderr.
 
-- [ ] **Step 4: Document safe operation**
+- [x] **Step 4: Document safe operation**
 
 `README.md` includes prerequisites, install/build, the three commands, provider fallback behavior, supported assets/chains, the meaning of “optimal,” and the non-guarantee against protocol compromise. `.env.example` lists only empty API/RPC variable names.
 
 `docs/operations.md` includes registry evidence review, ABI/selector review, `$1 / 1%` liquidity probe, read-only mainnet smoke test, low-value dedicated canary wallet, bridge-pending handling, RPC incident handling, log-leak response, and a prohibition on production keys in CI.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `npx vitest run tests/reporting tests/security && npm run typecheck`
 

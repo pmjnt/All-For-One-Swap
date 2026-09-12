@@ -10,7 +10,7 @@ import { discoverAssets } from './providers/discovery.js';
 import { createLifiRouteProvider } from './providers/lifi.js';
 import { createLifiPriceProvider } from './providers/pricing.js';
 import { createRegistryRpcReader, registryAssetIds } from './providers/rpc.js';
-import { reportPlan } from './reporting/console.js';
+import { renderPlanJson, reportPlan } from './reporting/console.js';
 import { savePlan } from './storage/plan-store.js';
 import { loadPlan } from './storage/plan-store.js';
 
@@ -24,7 +24,9 @@ export function buildCli(): Command {
     .requiredOption('--target-token <symbol>')
     .option('--min-net-usd <decimal>', 'minimum net output after gas', '0.25')
     .option('--out <path>', 'plan output path', 'plan.json')
+    .option('--json', 'emit the strict plan schema as JSON', false)
     .action(async (options: {
+      json: boolean;
       minNetUsd: string;
       out: string;
       targetChain: string;
@@ -48,7 +50,9 @@ export function buildCli(): Command {
         getPrice: priceProvider.getPrice,
         getRoutes: routeProvider.getRoutes,
         now: Date.now,
-        report: reportPlan,
+        report: options.json
+          ? (result) => process.stdout.write(`${renderPlanJson(result.plan)}\n`)
+          : reportPlan,
         save: savePlan,
       });
     });
