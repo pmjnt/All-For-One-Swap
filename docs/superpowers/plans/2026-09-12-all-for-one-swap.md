@@ -570,7 +570,7 @@ git commit -m "feat: add indexed multichain discovery"
 - Create: `tests/fixtures/lifi/routes-safe.json`
 - Create: `tests/fixtures/lifi/routes-unknown-tool.json`
 
-- [ ] **Step 1: Write failing adapter tests**
+- [x] **Step 1: Write failing adapter tests**
 
 ```ts
 // tests/providers/lifi.test.ts
@@ -586,13 +586,13 @@ it('normalizes amounts as bigint and records fee deduction', () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/providers/lifi.test.ts`
 
 Expected: FAIL because the LI.FI adapter does not exist.
 
-- [ ] **Step 3: Implement request and normalization**
+- [x] **Step 3: Implement request and normalization**
 
 POST `/v1/advanced/routes` with exact chain IDs, token addresses, amount, sender/receiver, and:
 
@@ -609,7 +609,7 @@ Use `/v1/advanced/stepTransaction` for fresh transaction data and `/v1/status` f
 
 `pricing.ts` obtains timestamped USD observations from LI.FI token metadata for the native gas asset and destination asset. Reject absent, non-positive, or stale observations. Convert locally estimated approval/reset gas to USD as `gasUnits * maxFeePerGas * nativeUsd / 10**nativeDecimals`; keep all arithmetic in `bigint` plus `Decimal`, never JavaScript `number`.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/providers/lifi.test.ts tests/providers/pricing.test.ts && npm run typecheck`
 

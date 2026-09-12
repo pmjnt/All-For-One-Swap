@@ -1,0 +1,39 @@
+{
+  "routes": [
+    {
+      "id": "route-safe-1",
+      "fromChainId": 1,
+      "toChainId": 8453,
+      "fromAmount": "1000000",
+      "toAmount": "900000",
+      "fromToken": {
+        "chainId": 1,
+        "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+      },
+      "toToken": {
+        "chainId": 8453,
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      },
+      "steps": [
+        {
+          "id": "step-safe-1",
+          "tool": "across",
+          "estimate": {
+            "gasCosts": [{ "amountUSD": "0.10" }],
+            "feeCosts": [{ "amountUSD": "0.01", "included": true }]
+          },
+          "includedSteps": [{ "tool": "across" }],
+          "transactionRequest": {
+            "chainId": 1,
+            "from": "0x0000000000000000000000000000000000000001",
+            "to": "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+            "data": "0xa1f1ce43",
+            "value": "0x0",
+            "gasLimit": "0x3d090"
+          }
+        }
+      ],
+      "expiresAt": "2030-01-01T00:00:00.000Z"
+    }
+  ]
+}
