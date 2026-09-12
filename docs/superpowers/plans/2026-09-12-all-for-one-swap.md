@@ -366,7 +366,7 @@ git commit -m "feat: add reviewed chain asset and protocol registries"
 - Create: `tests/security/redact.test.ts`
 - Create: `tests/security/secret-input.test.ts`
 
-- [ ] **Step 1: Write failing security tests**
+- [x] **Step 1: Write failing security tests**
 
 ```ts
 // tests/security/redact.test.ts
@@ -398,13 +398,13 @@ it('rejects execution without an interactive TTY', async () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/security`
 
 Expected: FAIL because security modules do not exist.
 
-- [ ] **Step 3: Implement recursive redaction and signer verification**
+- [x] **Step 3: Implement recursive redaction and signer verification**
 
 ```ts
 // src/security/secret-input.ts
@@ -437,7 +437,7 @@ export async function readSigner(expected: Address, deps: SecretInputDeps = {
 
 `redact()` recursively replaces keys matching `/private.?key|authorization|api.?key|secret|signer/i`, sanitizes `Error` objects, and removes those query parameters from URL strings. It must handle arrays, circular references, and non-plain objects without invoking getters.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/security && npm run typecheck`
 
