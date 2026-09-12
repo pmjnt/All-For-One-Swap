@@ -107,7 +107,55 @@ Custom RPC endpoints take precedence over the public endpoints pinned in `src/co
 npm run build
 ```
 
-### 2. Create a read-only plan
+### 2. Start the interactive wizard
+
+The recommended beginner workflow is:
+
+```bash
+node dist/cli.js
+```
+
+The wizard asks for:
+
+1. `English` or `Tiếng Việt` for wizard-owned prompts;
+2. the public EVM wallet address to scan—not a private key;
+3. one of the six supported target chains;
+4. a registry-approved target token filtered for that chain;
+5. minimum net USD, defaulting to `0.25`;
+6. plan and journal paths, defaulting to `plan.json` and `journal.json`.
+
+It creates and displays the read-only plan before asking `Execute this plan now? (y/N)`. The default is **No**. Depending on the result, the wizard will either:
+
+- save the plan and stop because no route is executable;
+- save the plan and stop so you can review it;
+- delegate the saved plan to the existing executor after you explicitly choose Yes.
+
+Choosing Yes does not bypass the safety gate. You must still type the exact word `EXECUTE`; only then does the masked private-key prompt appear. The derived signer address must match the public wallet address entered at the start. Pressing `Ctrl+C` at a prompt cancels safely.
+
+### 3. Review the plan
+
+Do not approve execution until you have inspected `plan.json` and the console report for:
+
+- discovery mode and any missing or failed chains;
+- exact source and destination chain/token contracts;
+- source amounts and preserved native-gas reserves;
+- route tool IDs (`across`, `1inch`, or `odos` only);
+- estimated gas, explicit fees, net USD output, and minimum receive;
+- expiry time and skipped reason codes.
+
+`ALLOWLIST_ONLY` means no indexed token discovery was used. `PARTIAL` means at least one chain could not be fully checked; absence from that plan is not proof of a zero balance. Investigate warnings before execution.
+
+### 4. Simulation before broadcast
+
+Simulation is a hard gate, not a success prediction. Each transaction candidate must pass `eth_call` and `estimateGas` before that candidate is broadcast. A failed simulation blocks the affected transaction.
+
+For an ERC-20 route that needs allowance, every approval candidate is simulated before its approval transaction is sent. The swap or bridge may require that allowance to exist first, so it is simulated again after the approval is mined and before the route transaction is broadcast. If that final simulation fails, the approval may already exist on-chain, but the swap or bridge transaction is not sent.
+
+A successful simulation only reflects the RPC state observed at that moment. State, price, nonce, liquidity, gas, or protocol conditions can change before mining, and bridge delivery cannot be guaranteed.
+
+### 5. Explicit commands for automation
+
+The existing argument-based workflow remains available. Create a read-only plan:
 
 The following example consolidates eligible balances into USDC on Base and skips routes whose estimated net result is below USD 0.25:
 
@@ -122,20 +170,7 @@ node dist/cli.js plan \
 
 Use `--json` if you want the strict plan schema on standard output. The plan is still written atomically to the path selected by `--out`.
 
-### 3. Review the plan
-
-Do not execute immediately. Inspect `plan.json` and the console report for:
-
-- discovery mode and any missing or failed chains;
-- exact source and destination chain/token contracts;
-- source amounts and preserved native-gas reserves;
-- route tool IDs (`across`, `1inch`, or `odos` only);
-- estimated gas, explicit fees, net USD output, and minimum receive;
-- expiry time and skipped reason codes.
-
-`ALLOWLIST_ONLY` means no indexed token discovery was used. `PARTIAL` means at least one chain could not be fully checked; absence from that plan is not proof of a zero balance. Investigate warnings before execution.
-
-### 4. Execute interactively
+Then execute it from a trusted interactive terminal:
 
 ```bash
 node dist/cli.js execute --plan plan.json --journal journal.json
@@ -149,7 +184,7 @@ Execute N routes? Type EXECUTE to continue
 
 Only after that exact confirmation does the masked private-key prompt appear. Run this command in a trusted interactive terminal. Stop if the refreshed batch differs from what you reviewed or if any address is unexpected.
 
-### 5. Resume safely
+### 6. Resume safely
 
 If the process exits, a receipt is still pending, or a bridge needs more observation time, preserve the original plan, journal, and generated `.ready` sidecar and run:
 

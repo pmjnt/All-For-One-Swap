@@ -533,14 +533,28 @@ export BASE_RPC_URL="https://your-base-rpc.example"</code></pre>
 
       <section id="lap-ke-hoach">
         <span class="step-label">Bước 04</span>
-        <h2>Tạo plan chỉ đọc</h2>
-        <p>Build CLI, sau đó truyền địa chỉ ví công khai, chain đích, token đích và ngưỡng lợi ích tối thiểu. Ví dụ dưới đây gom các route đủ điều kiện về USDC trên Base.</p>
+        <h2>Mở wizard và tạo plan chỉ đọc</h2>
+        <p>Build CLI, sau đó chạy không kèm subcommand. Wizard sẽ hỏi ngôn ngữ, địa chỉ ví công khai, chain đích, token đích, ngưỡng lợi ích tối thiểu, file plan và file journal.</p>
         <div class="command">
           <div class="command-bar"><span>Build</span><button class="copy-button" type="button" data-copy="build-command">Sao chép</button></div>
           <pre><code id="build-command">npm run build</code></pre>
         </div>
         <div class="command">
-          <div class="command-bar"><span>Lập kế hoạch</span><button class="copy-button" type="button" data-copy="plan-command">Sao chép</button></div>
+          <div class="command-bar"><span>Mở wizard</span><button class="copy-button" type="button" data-copy="wizard-command">Sao chép</button></div>
+          <pre><code id="wizard-command">node dist/cli.js</code></pre>
+        </div>
+        <ul>
+          <li>Chọn <code>English</code> hoặc <code>Tiếng Việt</code>; lựa chọn chỉ dùng trong lần chạy hiện tại.</li>
+          <li>Prompt đầu vào ví yêu cầu địa chỉ công khai <code>0x…</code>, không phải private key.</li>
+          <li>Danh sách token đích được lọc từ registry theo chain đã chọn; BSC chỉ hiện BNB, Base hiện ETH và USDC.</li>
+          <li>Giá trị mặc định là <code>0.25</code> USD, <code>plan.json</code> và <code>journal.json</code>.</li>
+          <li>Sau khi lưu và hiển thị plan, wizard hỏi <code>Thực thi kế hoạch này ngay? (y/N)</code>; mặc định là No.</li>
+        </ul>
+        <p>Nếu không có route <code>READY</code>, wizard lưu plan và dừng mà không hỏi private key. Nhấn <code>Ctrl+C</code> tại prompt sẽ hủy an toàn.</p>
+        <h3>Lệnh đầy đủ cho automation</h3>
+        <p>Script và người dùng nâng cao vẫn có thể truyền toàn bộ tham số:</p>
+        <div class="command">
+          <div class="command-bar"><span>Plan không tương tác</span><button class="copy-button" type="button" data-copy="plan-command">Sao chép</button></div>
           <pre><code id="plan-command">node dist/cli.js plan \
   --wallet 0xYourAddress \
   --target-chain base \
@@ -579,13 +593,22 @@ export BASE_RPC_URL="https://your-base-rpc.example"</code></pre>
           <strong>“Tối ưu” có giới hạn.</strong>
           Tool chọn net output cao nhất trong các route LI.FI trả về tại thời điểm đó và vượt qua local policy. Đây không phải cam kết route tốt nhất toàn thị trường, giá không đổi hoặc bridge chắc chắn hoàn tất.
         </div>
+        <div class="callout success">
+          <strong>Mô phỏng là điều kiện bắt buộc trước broadcast.</strong>
+          Mỗi candidate phải vượt qua <code>eth_call</code> và <code>estimateGas</code>. Nếu mô phỏng <code>FAIL</code>, candidate đó không được gửi thật. <code>PASS</code> chỉ phản ánh trạng thái RPC tại thời điểm kiểm tra, không bảo đảm giao dịch sẽ được mine hoặc bridge sẽ hoàn tất.
+        </div>
         <p>Across là bridge duy nhất được bật. 1inch và Odos là hai DEX tool được phép. Stargate đang bị tắt cho đến khi có mức decode và validation calldata tương đương.</p>
       </section>
 
       <section id="thuc-thi">
         <span class="step-label">Bước 06</span>
         <h2>Thực thi trong Terminal tin cậy</h2>
-        <p>Chỉ chạy khi plan đã được kiểm tra và bạn sẵn sàng ký. Tool refresh toàn bộ batch, xác thực lại route, rồi yêu cầu xác nhận chính xác.</p>
+        <p>Nếu chọn Yes tại câu hỏi thực thi ngay, wizard chuyển plan đã lưu cho executor hiện tại. Tool refresh toàn bộ batch, xác thực và mô phỏng lại route, rồi vẫn yêu cầu bạn gõ xác nhận chính xác.</p>
+        <div class="command">
+          <div class="command-bar"><span>Prompt của wizard</span></div>
+          <pre><code>Thực thi kế hoạch này ngay? (y/N)</code></pre>
+        </div>
+        <p>Nếu đã thoát wizard để kiểm tra plan lâu hơn, bạn có thể thực thi riêng bằng lệnh sau:</p>
         <div class="command">
           <div class="command-bar"><span>Thực thi</span><button class="copy-button" type="button" data-copy="execute-command">Sao chép</button></div>
           <pre><code id="execute-command">node dist/cli.js execute --plan plan.json --journal journal.json</code></pre>
@@ -594,9 +617,10 @@ export BASE_RPC_URL="https://your-base-rpc.example"</code></pre>
           <div class="command-bar"><span>Prompt xác nhận</span></div>
           <pre><code>Execute N routes? Type EXECUTE to continue</code></pre>
         </div>
-        <p>Gõ đúng <code>EXECUTE</code> nếu batch refresh vẫn khớp với plan bạn duyệt. Sau đó prompt private key được che mới xuất hiện. Địa chỉ suy ra từ key phải trùng với wallet trong plan.</p>
+        <p>Gõ đúng <code>EXECUTE</code> nếu batch refresh vẫn khớp với plan bạn duyệt. Chỉ sau đó prompt private key được che mới xuất hiện. Địa chỉ suy ra từ key phải trùng với địa chỉ ví công khai đã dùng để tạo plan.</p>
         <ul>
-          <li>Approval ERC-20 dùng đúng amount đã plan; legacy USDT có thể cần reset allowance về 0 trước.</li>
+          <li>Mỗi approval ERC-20 được mô phỏng trước khi gửi và dùng đúng amount đã plan; legacy USDT có thể cần reset allowance về 0 trước.</li>
+          <li>Nếu cần approval, swap/bridge được mô phỏng lại sau khi approval được mine. Nếu lần này fail, approval có thể đã tồn tại nhưng swap/bridge không được broadcast.</li>
           <li>Route chạy tuần tự để journal phản ánh từng trạng thái.</li>
           <li>Dừng ngay nếu tool, amount, output, recipient, spender hoặc calldata thay đổi ngoài policy.</li>
           <li>Không đóng Terminal tùy tiện khi một transaction vừa được gửi; giữ lại hash và journal.</li>
