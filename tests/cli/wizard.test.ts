@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   destinationChoices,
+  runLiveWizard,
   runWizard,
+  runWizardSafely,
   validateMinimum,
   validatePath,
   validateWallet,
@@ -128,5 +130,37 @@ describe('wizard orchestration', () => {
       write: vi.fn(),
     })).resolves.toBe('EXECUTED');
     expect(execute).toHaveBeenCalledWith(saved, 'custom-journal.json');
+  });
+
+  it('turns prompt cancellation into a safe result', async () => {
+    const cancellation = new Error('User force closed the prompt');
+    cancellation.name = 'ExitPromptError';
+    const write = vi.fn();
+
+    await expect(runWizardSafely(async () => { throw cancellation; }, write))
+      .resolves.toBe('CANCELLED');
+    expect(write).toHaveBeenCalledWith('Cancelled.');
+  });
+
+  it('does not hide non-prompt failures', async () => {
+    const failure = new Error('RPC failed');
+
+    await expect(runWizardSafely(async () => { throw failure; }, vi.fn()))
+      .rejects.toThrow('RPC failed');
+  });
+
+  it('runs the live adapter through the same wizard orchestration', async () => {
+    const prompts = promptQueue([
+      'en', TEST_WALLET, 'bsc', 'BNB', '0.25', 'plan.json', 'journal.json',
+    ]);
+    const execute = vi.fn();
+
+    await expect(runLiveWizard({
+      execute,
+      plan: async () => ({ plan: validPlan({ routes: [] }), warnings: [] }),
+      prompts,
+      write: vi.fn(),
+    })).resolves.toBe('NO_ROUTES');
+    expect(execute).not.toHaveBeenCalled();
   });
 });
