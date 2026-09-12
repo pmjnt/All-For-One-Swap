@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 
 import { runPlan } from './cli/plan.js';
 import { executeWithLiveProviders, runExecute } from './cli/execute.js';
+import { resumeFromFiles } from './cli/resume.js';
 import { readRuntimeEnvironment } from './config/env.js';
 import { createAlchemyPortfolioProvider } from './providers/alchemy.js';
 import { discoverAssets } from './providers/discovery.js';
@@ -61,7 +62,18 @@ export function buildCli(): Command {
         load: loadPlan,
       });
     });
-  cli.command('resume');
+  cli
+    .command('resume')
+    .requiredOption('--plan <path>')
+    .requiredOption('--journal <path>')
+    .option('--timeout-seconds <seconds>', 'bridge observation timeout', '600')
+    .action(async (options: { journal: string; plan: string; timeoutSeconds: string }) => {
+      const timeoutSeconds = Number(options.timeoutSeconds);
+      if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
+        throw new Error('Timeout must be a non-negative number of seconds');
+      }
+      await resumeFromFiles({ ...options, timeoutSeconds });
+    });
 
   return cli;
 }

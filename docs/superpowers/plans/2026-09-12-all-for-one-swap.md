@@ -926,7 +926,7 @@ git commit -m "feat: safely execute refreshed route batches"
 - Create: `tests/execution/bridge-monitor.test.ts`
 - Create: `tests/cli/resume.test.ts`
 
-- [ ] **Step 1: Write failing pending and duplicate-prevention tests**
+- [x] **Step 1: Write failing pending and duplicate-prevention tests**
 
 ```ts
 // tests/cli/resume.test.ts
@@ -947,13 +947,13 @@ it('keeps bridge timeout pending', async () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/execution/bridge-monitor.test.ts tests/cli/resume.test.ts`
 
 Expected: FAIL because bridge monitor and resume do not exist.
 
-- [ ] **Step 3: Implement evidence-based reconciliation**
+- [x] **Step 3: Implement evidence-based reconciliation**
 
 Poll LI.FI status with bounded exponential backoff of 5, 10, 20, 30 seconds and a configurable observation timeout. Confirm source submission through RPC receipt. Confirm destination completion through destination transaction receipt plus the planned wallet's destination balance delta; provider `DONE` status alone is insufficient. Map timeout to `BRIDGE_PENDING`, explicit on-chain revert to `FAILED`, and verified delivery to `COMPLETED`.
 
@@ -970,7 +970,7 @@ Reconcile all journal entries before asking for a signer. Only a `READY` step ma
 
 Extend `tests/support/factories.ts` with the three resume helpers imported above, including route-specific pre-submission destination balances.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/execution/bridge-monitor.test.ts tests/cli/resume.test.ts tests/storage && npm run typecheck`
 

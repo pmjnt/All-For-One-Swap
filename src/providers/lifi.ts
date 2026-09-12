@@ -126,6 +126,41 @@ export interface LifiRouteRequest {
   wallet: Address;
 }
 
+const statusSchema = z.object({
+  status: z.enum(['NOT_FOUND', 'PENDING', 'DONE', 'FAILED', 'INVALID']),
+  receiving: z.object({ txHash: hexDataSchema }).passthrough().optional(),
+}).passthrough();
+
+export function createLifiStatusProvider(fetcher: typeof fetch = fetch): {
+  status(request: {
+    bridge: string;
+    fromChainId: SupportedChainId;
+    sourceTxHash: Hex;
+    toChainId: SupportedChainId;
+  }): Promise<{ destinationTxHash?: Hex; status: 'PENDING' | 'DONE' | 'FAILED' }>;
+} {
+  return {
+    async status(request) {
+      const url = new URL('https://li.quest/v1/status');
+      url.searchParams.set('txHash', request.sourceTxHash);
+      url.searchParams.set('bridge', request.bridge);
+      url.searchParams.set('fromChain', String(request.fromChainId));
+      url.searchParams.set('toChain', String(request.toChainId));
+      let response: Response;
+      try { response = await fetcher(url); } catch { throw new Error('LI.FI status network request failed'); }
+      if (!response.ok) throw new Error(`LI.FI status request failed with HTTP ${response.status}`);
+      const body = statusSchema.parse(await response.json());
+      const status = body.status === 'DONE' ? 'DONE' : body.status === 'FAILED' || body.status === 'INVALID'
+        ? 'FAILED'
+        : 'PENDING';
+      return {
+        status,
+        ...(body.receiving?.txHash ? { destinationTxHash: body.receiving.txHash as Hex } : {}),
+      };
+    },
+  };
+}
+
 export function createLifiRouteProvider(
   fetcher: typeof fetch = fetch,
   now: () => number = Date.now,

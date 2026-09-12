@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import safe from '../fixtures/lifi/routes-safe.json' with { type: 'json' };
-import { createLifiRouteProvider, normalizeLifiRoutes } from '../../src/providers/lifi.js';
+import {
+  createLifiRouteProvider,
+  createLifiStatusProvider,
+  normalizeLifiRoutes,
+} from '../../src/providers/lifi.js';
 import { TEST_WALLET } from '../support/factories.js';
 
 describe('normalizeLifiRoutes', () => {
@@ -47,5 +51,17 @@ describe('normalizeLifiRoutes', () => {
 
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(routes[0]?.expiresAt).toBe('2026-09-12T00:00:30.000Z');
+  });
+});
+
+describe('createLifiStatusProvider', () => {
+  it('normalizes destination transaction evidence', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
+      status: 'DONE', receiving: { txHash: '0x1234' },
+    }), { status: 200 }));
+    const provider = createLifiStatusProvider(fetcher);
+    await expect(provider.status({
+      bridge: 'across', fromChainId: 1, sourceTxHash: '0xabcd', toChainId: 8453,
+    })).resolves.toEqual({ status: 'DONE', destinationTxHash: '0x1234' });
   });
 });

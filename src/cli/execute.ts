@@ -113,6 +113,19 @@ export async function executeWithLiveProviders(plan: PlanV1, journalPath: string
   const routeProvider = createLifiRouteProvider();
   return executeBatch(plan, {
     confirm: (message) => input({ message }),
+    destinationBalance: async (route) => {
+      const destinationChainId = chainIdOf(route.toAsset);
+      const destinationAddress = addressOf(route.toAsset);
+      const client = publicClientFor(destinationChainId);
+      return destinationAddress === 'native'
+        ? client.getBalance({ address: getAddress(plan.wallet) })
+        : client.readContract({
+            abi: erc20Abi,
+            address: destinationAddress,
+            functionName: 'balanceOf',
+            args: [getAddress(plan.wallet)],
+          });
+    },
     now: Date.now,
     persistJournal: (journal) => saveJournal(journalPath, journal),
     readSigner: () => readSigner(getAddress(plan.wallet)),

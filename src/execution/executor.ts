@@ -11,6 +11,7 @@ export type RefreshResult =
 
 export interface ExecutionDependencies<Signer = unknown> {
   confirm(message: string): Promise<string>;
+  destinationBalance?(route: NormalizedRoute): Promise<bigint>;
   now(): number;
   persistJournal(journal: JournalV1): Promise<void>;
   readSigner(): Promise<Signer>;
@@ -70,6 +71,18 @@ export async function executeBatch<Signer>(
     const route = refreshed[index];
     if (!route) continue;
     await dependencies.recheck(route);
+    if (dependencies.destinationBalance) {
+      const destinationBalanceBefore = await dependencies.destinationBalance(route);
+      journal = {
+        ...journal,
+        updatedAt: new Date(dependencies.now()).toISOString(),
+        routes: journal.routes.map((entry, routeIndex) => routeIndex === index ? {
+          ...entry,
+          destinationBalanceBefore: destinationBalanceBefore.toString(),
+        } : entry),
+      };
+      await dependencies.persistJournal(journal);
+    }
     const hash = await dependencies.submit(route, signer);
     const current = journal.routes[index];
     if (!current) throw new Error('Journal route is missing');

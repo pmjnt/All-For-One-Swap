@@ -61,4 +61,18 @@ describe('executeBatch', () => {
     })).rejects.toThrow('TOOLS_CHANGED');
     expect(confirm).not.toHaveBeenCalled();
   });
+
+  it('persists a route-specific destination balance before submission', async () => {
+    const snapshots: Array<string | undefined> = [];
+    await executeBatch(validPlan({ routes: [planWithTwoRoutes().routes[0]!] }), {
+      confirm: async () => 'EXECUTE',
+      destinationBalance: async () => 123n,
+      now: () => Date.parse('2026-09-12T00:00:00.000Z'),
+      persistJournal: async (journal) => { snapshots.push(journal.routes[0]?.destinationBalanceBefore); },
+      readSigner: async () => ({}), recheck: async () => undefined,
+      refresh: async () => ({ valid: true, route: validRoute() }),
+      submit: async () => '0x1234', wait: async () => ({ status: 'success' }),
+    });
+    expect(snapshots).toContain('123');
+  });
 });
