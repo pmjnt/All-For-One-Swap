@@ -189,7 +189,7 @@ git commit -m "chore: scaffold typed CLI"
 - Create: `tests/support/factories.ts`
 - Create: `tests/domain/schemas.test.ts`
 
-- [ ] **Step 1: Write failing schema tests**
+- [x] **Step 1: Write failing schema tests**
 
 ```ts
 // tests/domain/schemas.test.ts
@@ -207,13 +207,13 @@ describe('persisted schemas', () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests and verify failure**
+- [x] **Step 2: Run the tests and verify failure**
 
 Run: `npx vitest run tests/domain/schemas.test.ts`
 
 Expected: FAIL because the schemas do not exist.
 
-- [ ] **Step 3: Define the shared types and strict schemas**
+- [x] **Step 3: Define the shared types and strict schemas**
 
 ```ts
 // src/domain/model.ts
@@ -255,13 +255,13 @@ In `schemas.ts`, declare `.strict()` Zod objects for `PlanV1` and `JournalV1`. E
 
 Create `tests/support/factories.ts` with typed builders `validPlan()`, `validRoute()`, and `validJournal()`. Every builder returns a complete schema-valid value and accepts a `Partial` override through explicit field assignment; it must not use `as any`.
 
-- [ ] **Step 4: Run schema tests and typecheck**
+- [x] **Step 4: Run schema tests and typecheck**
 
 Run: `npx vitest run tests/domain/schemas.test.ts && npm run typecheck`
 
 Expected: both tests pass and TypeScript reports no errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/domain tests/domain tests/support/factories.ts
