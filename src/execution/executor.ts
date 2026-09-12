@@ -111,6 +111,20 @@ export async function executeBatch<Signer>(
     };
     await dependencies.persistJournal(journal);
     if (nextState === 'FAILED') throw new Error(`Transaction reverted: ${hash}`);
+
+    const fromChainId = Number(route.fromAsset.slice(0, route.fromAsset.indexOf(':')));
+    const toChainId = Number(route.toAsset.slice(0, route.toAsset.indexOf(':')));
+    const finalState = fromChainId === toChainId ? 'COMPLETED' as const : 'BRIDGE_PENDING' as const;
+    journal = {
+      ...journal,
+      updatedAt: new Date(dependencies.now()).toISOString(),
+      routes: journal.routes.map((entry, routeIndex) => routeIndex === index ? {
+        ...entry,
+        state: finalState,
+        history: [...entry.history, finalState],
+      } : entry),
+    };
+    await dependencies.persistJournal(journal);
   }
   return journal;
 }

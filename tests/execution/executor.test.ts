@@ -43,7 +43,7 @@ describe('executeBatch', () => {
       wait: vi.fn(async () => ({ status: 'success' as const })),
     });
     expect(events).toContain('SUBMITTED');
-    expect(result.routes[0]?.state).toBe('CONFIRMED');
+    expect(result.routes[0]?.state).toBe('BRIDGE_PENDING');
   });
 
   it('rejects a material tool change before prompting', async () => {

@@ -48,7 +48,10 @@ export function createLifiPriceProvider(fetcher: typeof fetch = fetch): {
       try {
         const url = new URL('https://li.quest/v1/token');
         url.searchParams.set('chain', String(chainId));
-        url.searchParams.set('token', token);
+        url.searchParams.set(
+          'token',
+          token === 'native' ? '0x0000000000000000000000000000000000000000' : token,
+        );
         response = await fetcher(url);
       } catch {
         throw new Error('LI.FI token-price network request failed');

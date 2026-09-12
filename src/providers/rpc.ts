@@ -68,13 +68,13 @@ export function createRegistryRpcReader(): {
 } {
   return {
     async balances(wallet, requestedAssetIds) {
-      const balances: AssetBalance[] = [];
-      const completeChainIds: SupportedChainId[] = [];
-      const warnings: DiscoveryWarning[] = [];
-
-      for (const chainId of Object.keys(CHAINS).map(Number) as SupportedChainId[]) {
+      const chainResults = await Promise.all(
+        (Object.keys(CHAINS).map(Number) as SupportedChainId[]).map(async (chainId) => {
+          const balances: AssetBalance[] = [];
+          const completeChainIds: SupportedChainId[] = [];
+          const warnings: DiscoveryWarning[] = [];
         const requested = requestedAssetIds.map(parseAssetId).filter((asset) => asset.chainId === chainId);
-        if (requested.length === 0) continue;
+        if (requested.length === 0) return { balances, completeChainIds, warnings };
         const config = CHAINS[chainId];
         const configuredUrl = process.env[config.rpcEnv];
         const urls = configuredUrl ? [configuredUrl, config.publicRpcUrl] : [config.publicRpcUrl];
@@ -82,7 +82,10 @@ export function createRegistryRpcReader(): {
 
         try {
           const client = await connectVerifiedRpc(chainId, urls, (url) =>
-            createPublicClient({ chain: config.chain, transport: http(url) }),
+            createPublicClient({
+              chain: config.chain,
+              transport: http(url, { retryCount: 0, timeout: 5_000 }),
+            }),
           );
           if (requested.some((asset) => asset.address === 'native')) {
             try {
@@ -126,9 +129,15 @@ export function createRegistryRpcReader(): {
         } catch (error) {
           warnings.push({ chainId, code: 'RPC_CHAIN_FAILED', message: sanitizeRpcError(error) });
         }
-      }
+          return { balances, completeChainIds, warnings };
+        }),
+      );
 
-      return { balances, completeChainIds, warnings };
+      return {
+        balances: chainResults.flatMap((result) => result.balances),
+        completeChainIds: chainResults.flatMap((result) => result.completeChainIds),
+        warnings: chainResults.flatMap((result) => result.warnings),
+      };
     },
   };
 }

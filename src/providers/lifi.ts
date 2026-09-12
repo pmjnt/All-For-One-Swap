@@ -181,7 +181,7 @@ export function createLifiRouteProvider(
             fromChainId: request.fromChainId,
             fromTokenAddress: request.fromToken === 'native' ? native : request.fromToken,
             options: {
-              bridges: { allow: ['across', 'stargateV2'] },
+              bridges: { allow: ['across'] },
               exchanges: { allow: ['1inch', 'odos'] },
               order: 'RECOMMENDED',
               slippage: 0.01,

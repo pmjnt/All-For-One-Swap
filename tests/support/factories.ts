@@ -76,7 +76,9 @@ export function makePlanDeps(options: {
         amount: 1_000_000n,
         assetId: '1:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       }],
-      completeChainIds: [1, 10, 137, 8453, 42161],
+      completeChainIds: options.partialChain
+        ? [1, 10, 56, 137, 8453, 42161].filter((chainId) => chainId !== options.partialChain) as Array<1 | 10 | 56 | 137 | 8453 | 42161>
+        : [1, 10, 56, 137, 8453, 42161],
       mode: options.partialChain ? 'PARTIAL' : 'ALLOWLIST_ONLY',
       warnings: options.partialChain
         ? [{ chainId: options.partialChain, code: 'RPC_CHAIN_FAILED', message: 'unavailable' }]
@@ -84,6 +86,7 @@ export function makePlanDeps(options: {
     }),
     getPrice: async () => ({ observedAt: '2026-09-12T00:00:00.000Z', priceUsd: '1' }),
     getRoutes: async () => [validRoute()],
+    nativeGasCost: async () => 0n,
     now: () => Date.parse('2026-09-12T00:00:00.000Z'),
     report: () => undefined,
     save: options.save ?? (async (_path, plan) => plan),

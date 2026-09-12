@@ -12,5 +12,9 @@ Reviewed on 2026-09-12:
 - Ethereum WBTC, DAI, LINK, UNI, and AAVE: official BitGo, Sky, Chainlink, Uniswap, and Aave documentation linked directly from each registry entry.
 - LI.FI Diamond address: [LI.FI smart-contract addresses](https://docs.li.fi/introduction/lifi-architecture/smart-contract-addresses).
 - LI.FI function ABIs and deployment records: [official contract types](https://github.com/lifinance/lifi-contract-types/blob/main/dist/diamond.json) and [contracts repository](https://github.com/lifinance/contracts/tree/main/deployments).
+- Nested DEX routers: 1inch's [official Swap API quick start](https://business.1inch.com/portal/documentation/apis/swap/classic-swap/quick-start) and Odos's [official Router V2 deployments](https://github.com/odos-xyz/odos-router-v2#chain-deployments).
 
-The pinned selectors correspond to Across V4 and Stargate V2 bridge-only and swap-then-bridge functions plus the six GenericSwapFacet V3 single/multiple, ERC-20/native same-chain variants. Execution remains disabled until the decoder verifies each outer call and every nested DEX call against the route and protocol registries.
+The executable MVP pins Across V4 bridge-only and swap-then-bridge selectors plus the six
+GenericSwapFacet V3 single/multiple, ERC-20/native same-chain variants. Every outer call and nested
+DEX target is decoded and checked against the local registries. Stargate V2 remains disabled until
+its destination asset IDs and fee/refund fields have equivalent deny-by-default validation.

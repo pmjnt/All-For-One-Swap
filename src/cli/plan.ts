@@ -6,6 +6,7 @@ import { CHAINS } from '../config/chains.js';
 import type { AssetId, NormalizedRoute, SupportedChainId } from '../domain/model.js';
 import type { PlanV1 } from '../domain/schemas.js';
 import { selectBestRoute } from '../planning/planner.js';
+import { reserveNativeAmount } from '../planning/economics.js';
 import type { DiscoveryResult } from '../providers/discovery.js';
 import type { LifiRouteRequest } from '../providers/lifi.js';
 import { assertFreshPrice, type PriceObservation } from '../providers/pricing.js';
@@ -23,6 +24,7 @@ export interface PlanDependencies {
   discover(wallet: Address): Promise<DiscoveryResult>;
   getPrice(chainId: number, token: string): Promise<PriceObservation>;
   getRoutes(request: LifiRouteRequest): Promise<NormalizedRoute[]>;
+  nativeGasCost(chainId: SupportedChainId): Promise<bigint>;
   now(): number;
   report(result: PlanReport): void;
   save(path: string, plan: PlanV1): Promise<PlanV1>;
@@ -58,6 +60,22 @@ function amountUsd(amount: bigint, asset: AssetRegistryEntry, priceUsd: string):
     .toFixed();
 }
 
+function marketOutputAmount(
+  sourceAmount: bigint,
+  source: AssetRegistryEntry,
+  sourcePriceUsd: string,
+  destination: AssetRegistryEntry,
+  destinationPriceUsd: string,
+): bigint {
+  return BigInt(new Decimal(sourceAmount.toString())
+    .div(new Decimal(10).pow(source.decimals))
+    .times(sourcePriceUsd)
+    .div(destinationPriceUsd)
+    .times(new Decimal(10).pow(destination.decimals))
+    .toDecimalPlaces(0, Decimal.ROUND_DOWN)
+    .toFixed());
+}
+
 export async function runPlan(options: PlanOptions, dependencies: PlanDependencies): Promise<PlanReport> {
   const wallet = getAddress(options.wallet);
   const destination = resolveDestination(options.targetChain, options.targetToken);
@@ -85,10 +103,41 @@ export async function runPlan(options: PlanOptions, dependencies: PlanDependenci
       continue;
     }
 
+    let amount = holding.amount;
+    if (source.kind === 'native') {
+      const estimatedGasCost = await dependencies.nativeGasCost(source.chainId);
+      amount = reserveNativeAmount(
+        holding.amount,
+        estimatedGasCost,
+        CHAINS[source.chainId].gasBufferBps,
+      ).spendable;
+      if (amount === 0n) {
+        routes.push({ ...fallback, state: 'SKIPPED', reason: 'INSUFFICIENT_GAS' });
+        continue;
+      }
+    }
+    let sourcePrice: PriceObservation;
+    try {
+      sourcePrice = await dependencies.getPrice(
+        source.chainId,
+        source.address === 'native' ? 'native' : source.address,
+      );
+      assertFreshPrice(sourcePrice, dependencies.now(), 60_000);
+    } catch {
+      routes.push({ ...fallback, state: 'SKIPPED', reason: 'MISSING_PRICE' });
+      continue;
+    }
+    const expectedToAmount = marketOutputAmount(
+      amount,
+      source,
+      sourcePrice.priceUsd,
+      destination,
+      price.priceUsd,
+    );
     let candidates: NormalizedRoute[];
     try {
       candidates = await dependencies.getRoutes({
-        amount: holding.amount,
+        amount,
         fromChainId: source.chainId,
         fromToken: source.address,
         toChainId: destination.chainId,
@@ -102,7 +151,7 @@ export async function runPlan(options: PlanOptions, dependencies: PlanDependenci
     const selection = selectBestRoute({
       minNetUsd: options.minNetUsd,
       outputUsd: (route) => amountUsd(route.quotedToAmount, destination, price.priceUsd),
-      routePolicy: { maxSlippageBps: 100, now: dependencies.now() },
+      routePolicy: { expectedToAmount, maxSlippageBps: 100, now: dependencies.now() },
       routes: candidates,
     });
     if (selection.state === 'SKIPPED') {

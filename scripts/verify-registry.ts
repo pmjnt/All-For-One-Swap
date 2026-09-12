@@ -2,7 +2,7 @@ import { createPublicClient, getAddress, http } from 'viem';
 
 import { ASSETS } from '../src/config/assets.js';
 import { CHAINS, SUPPORTED_CHAIN_IDS } from '../src/config/chains.js';
-import { PROTOCOLS } from '../src/config/protocols.js';
+import { DEX_ROUTERS, PROTOCOLS } from '../src/config/protocols.js';
 import { verifyRegistryOnline } from '../src/config/verify.js';
 
 function verifyRegistry(): void {
@@ -36,6 +36,19 @@ function verifyRegistry(): void {
       if (!/^0x[0-9a-fA-F]{8}$/.test(selector)) throw new Error(`Invalid selector ${selector}`);
     }
   }
+  const routerIdentities = new Set<string>();
+  for (const router of DEX_ROUTERS) {
+    getAddress(router.address);
+    if (!router.sourceUrl.startsWith('https://')) throw new Error(`Missing DEX evidence for ${router.tool}`);
+    const identity = `${router.chainId}:${router.tool}:${router.address.toLowerCase()}`;
+    if (routerIdentities.has(identity)) throw new Error(`Duplicate DEX router ${identity}`);
+    routerIdentities.add(identity);
+  }
+  for (const chainId of SUPPORTED_CHAIN_IDS) {
+    if (!DEX_ROUTERS.some((router) => router.chainId === chainId)) {
+      throw new Error(`Missing DEX router for chain ${chainId}`);
+    }
+  }
 }
 
 verifyRegistry();
@@ -62,11 +75,14 @@ if (process.argv.includes('--online')) {
         : [{ address: asset.address, chainId: asset.chainId, decimals: asset.decimals }],
     ),
     clientForChain,
-    contracts: PROTOCOLS.flatMap((protocol) =>
-      protocol.chainIds.flatMap((chainId) =>
-        [...protocol.entrypoints, ...protocol.approvedSpenders].map((address) => ({ address, chainId })),
+    contracts: [
+      ...PROTOCOLS.flatMap((protocol) =>
+        protocol.chainIds.flatMap((chainId) =>
+          [...protocol.entrypoints, ...protocol.approvedSpenders].map((address) => ({ address, chainId })),
+        ),
       ),
-    ),
+      ...DEX_ROUTERS.map(({ address, chainId }) => ({ address, chainId })),
+    ],
   });
 }
 

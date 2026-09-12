@@ -1,10 +1,12 @@
 import { Command } from 'commander';
 import { pathToFileURL } from 'node:url';
+import { createPublicClient, http } from 'viem';
 
 import { runPlan } from './cli/plan.js';
 import { executeWithLiveProviders, runExecute } from './cli/execute.js';
 import { resumeFromFiles } from './cli/resume.js';
 import { readRuntimeEnvironment } from './config/env.js';
+import { CHAINS } from './config/chains.js';
 import { createAlchemyPortfolioProvider } from './providers/alchemy.js';
 import { discoverAssets } from './providers/discovery.js';
 import { createLifiRouteProvider } from './providers/lifi.js';
@@ -49,6 +51,17 @@ export function buildCli(): Command {
         }),
         getPrice: priceProvider.getPrice,
         getRoutes: routeProvider.getRoutes,
+        nativeGasCost: async (chainId) => {
+          const config = CHAINS[chainId];
+          const client = createPublicClient({
+            chain: config.chain,
+            transport: http(process.env[config.rpcEnv] ?? config.publicRpcUrl, {
+              retryCount: 0,
+              timeout: 5_000,
+            }),
+          });
+          return (await client.getGasPrice()) * 750_000n;
+        },
         now: Date.now,
         report: options.json
           ? (result) => process.stdout.write(`${renderPlanJson(result.plan)}\n`)

@@ -1,4 +1,5 @@
 import { input } from '@inquirer/prompts';
+import { Decimal } from 'decimal.js';
 import {
   createPublicClient,
   createWalletClient,
@@ -15,8 +16,10 @@ import type { AssetId, NormalizedRoute, SupportedChainId } from '../domain/model
 import type { JournalV1, PlanV1 } from '../domain/schemas.js';
 import { executeBatch } from '../execution/executor.js';
 import { buildExactApprovalCalls, simulateCandidate, type SimulationClient } from '../execution/simulator.js';
+import { netOutputUsd } from '../planning/economics.js';
 import { validateTransaction } from '../policy/validate-transaction.js';
 import { createLifiRouteProvider } from '../providers/lifi.js';
+import { createLifiPriceProvider, gasCostUsd } from '../providers/pricing.js';
 import { readSigner } from '../security/secret-input.js';
 import { saveJournal } from '../storage/journal-store.js';
 
@@ -66,11 +69,13 @@ function simulationClient(chainId: SupportedChainId): SimulationClient {
   };
 }
 
-async function preflightLiveRoute(plan: PlanV1, route: NormalizedRoute): Promise<void> {
+async function preflightLiveRoute(plan: PlanV1, route: NormalizedRoute): Promise<bigint> {
   const sourceAddress = addressOf(route.fromAsset);
   if (sourceAddress === 'native') {
-    await simulateCandidate(simulationClient(route.transaction.chainId), route.transaction);
-    return;
+    return (await simulateCandidate(
+      simulationClient(route.transaction.chainId),
+      route.transaction,
+    )).estimatedGas;
   }
   const spender = route.transaction.approvalAddress;
   if (!spender) throw new Error('LI.FI route did not provide an approval spender');
@@ -92,25 +97,33 @@ async function preflightLiveRoute(plan: PlanV1, route: NormalizedRoute): Promise
     requiresReset: registryAsset?.transferBehavior === 'legacy-no-return',
     spender,
   });
+  let estimatedGas = 0n;
   for (const data of approvals) {
-    await simulateCandidate(simulationClient(route.transaction.chainId), {
+    estimatedGas += (await simulateCandidate(simulationClient(route.transaction.chainId), {
       chainId: route.transaction.chainId,
       data,
       from: getAddress(plan.wallet),
       gasLimit: 300_000n,
       to: sourceAddress,
       value: 0n,
-    });
+    })).estimatedGas;
   }
   // A downstream call without sufficient allowance is expected to revert. If the exact allowance
   // already exists, it must pass the full simulation before confirmation.
   if (approvals.length === 0) {
-    await simulateCandidate(simulationClient(route.transaction.chainId), route.transaction);
+    estimatedGas += (await simulateCandidate(
+      simulationClient(route.transaction.chainId),
+      route.transaction,
+    )).estimatedGas;
+  } else {
+    estimatedGas += route.transaction.gasLimit;
   }
+  return estimatedGas;
 }
 
 export async function executeWithLiveProviders(plan: PlanV1, journalPath: string): Promise<JournalV1> {
   const routeProvider = createLifiRouteProvider();
+  const priceProvider = createLifiPriceProvider();
   return executeBatch(plan, {
     confirm: (message) => input({ message }),
     destinationBalance: async (route) => {
@@ -154,8 +167,39 @@ export async function executeWithLiveProviders(plan: PlanV1, journalPath: string
               route,
               wallet: getAddress(plan.wallet),
             });
-            await preflightLiveRoute(plan, route);
-            return { valid: true as const, route };
+            const estimatedGas = await preflightLiveRoute(plan, route);
+            const chainClient = publicClientFor(route.transaction.chainId);
+            const [gasPrice, nativePrice, destinationPrice] = await Promise.all([
+              chainClient.getGasPrice(),
+              priceProvider.getPrice(route.transaction.chainId, 'native'),
+              priceProvider.getPrice(
+                toChainId,
+                addressOf(planned.toAsset as AssetId),
+              ),
+            ]);
+            const destination = ASSETS.find(
+              (asset) => `${asset.chainId}:${asset.address}`.toLowerCase()
+                === planned.toAsset.toLowerCase(),
+            );
+            if (!destination) continue;
+            const outputUsd = new Decimal(route.quotedToAmount.toString())
+              .div(new Decimal(10).pow(destination.decimals))
+              .times(destinationPrice.priceUsd)
+              .toFixed();
+            const localGasUsd = gasCostUsd({
+              gasUnits: estimatedGas,
+              maxFeePerGas: gasPrice,
+              nativeDecimals: 18,
+              nativeUsd: nativePrice.priceUsd,
+            });
+            const refreshedNet = netOutputUsd({
+              explicitFeeUsd: route.explicitFeeUsd,
+              feeDeducted: route.explicitFeeAlreadyDeducted,
+              gasUsd: localGasUsd,
+              outputUsd,
+            });
+            if (new Decimal(refreshedNet).lt(plan.policy.minNetUsd)) continue;
+            return { valid: true as const, route: { ...route, gasUsd: localGasUsd } };
           } catch {
             continue;
           }

@@ -329,7 +329,7 @@ export const CHAINS = {
 
 Use `getAddress()` while constructing `ASSETS`; store `kind`, `symbol`, `decimals`, `source`, `destination`, `sourceUrl`, `reviewedAt`, and the `$1 / 1%` probe evidence required by the design. Native entries use the internal identity `native`; ERC-20 entries use checksummed addresses.
 
-Start `PROTOCOLS` with LI.FI Diamond `0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE` only on networks confirmed by LI.FI deployment records. Permit only LI.FI tool IDs `across`, `stargateV2`, `1inch`, and `odos` for the first release. Pin selectors extracted from the reviewed LI.FI Diamond ABI; do not accept an unknown selector even when the entrypoint address matches.
+Start `PROTOCOLS` with LI.FI Diamond `0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE` only on networks confirmed by LI.FI deployment records. Permit only LI.FI tool IDs `across`, `1inch`, and `odos` for the executable first release; Stargate V2 remains denied until its destination asset IDs and fee/refund fields receive equivalent decoding. Pin selectors extracted from the reviewed LI.FI Diamond ABI; do not accept an unknown selector even when the entrypoint address matches.
 
 - [x] **Step 4: Verify registry data against authoritative sources**
 
@@ -598,7 +598,7 @@ POST `/v1/advanced/routes` with exact chain IDs, token addresses, amount, sender
 
 ```ts
 const routeOptions = {
-  bridges: { allow: ['across', 'stargateV2'] },
+  bridges: { allow: ['across'] },
   exchanges: { allow: ['1inch', 'odos'] },
   order: 'RECOMMENDED',
   slippage: 0.01,
@@ -1045,7 +1045,7 @@ git commit -m "docs: add safe operation and complete reporting"
 - Create: `scripts/mainnet-smoke.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Add end-to-end dependency-injected acceptance tests**
+- [x] **Step 1: Add end-to-end dependency-injected acceptance tests**
 
 Create tests that execute the real CLI orchestration with fixture transports and temporary storage:
 
@@ -1057,13 +1057,13 @@ Create tests that execute the real CLI orchestration with fixture transports and
 6. Process interruption after journaling hash → resume performs no duplicate submission.
 7. Native input → final source balance remains at or above calculated reserve.
 
-- [ ] **Step 2: Run the acceptance tests**
+- [x] **Step 2: Run the acceptance tests**
 
 Run: `npx vitest run tests/acceptance`
 
 Expected: all seven scenarios pass with zero real network calls.
 
-- [ ] **Step 3: Add and run the read-only mainnet smoke script**
+- [x] **Step 3: Add and run the read-only mainnet smoke script**
 
 `scripts/mainnet-smoke.ts` accepts only `--wallet`, invokes planning with execution dependencies absent, and exits non-zero for wrong chain IDs, malformed registry data, or unreported partial discovery. It contains no signer imports.
 
@@ -1085,7 +1085,7 @@ npm run smoke:mainnet -- --wallet 0x000000000000000000000000000000000000dEaD
 
 Expected: a read-only plan or explicit partial report; zero signing prompts and zero transaction hashes.
 
-- [ ] **Step 4: Run the complete verification gate**
+- [x] **Step 4: Run the complete verification gate**
 
 Run:
 
@@ -1100,7 +1100,7 @@ git status --short
 
 Expected: no critical audit finding; typecheck, all tests, build, and registry verification pass; coverage includes every policy rejection branch; `git diff --check` is clean. `git status` contains only intended acceptance changes before commit.
 
-- [ ] **Step 5: Commit the verified MVP**
+- [x] **Step 5: Commit the verified MVP**
 
 ```bash
 git add package.json package-lock.json scripts/mainnet-smoke.ts tests/acceptance

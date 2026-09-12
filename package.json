@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsup",
     "check": "npm run typecheck && npm test && npm run build",
+    "smoke:mainnet": "tsx scripts/mainnet-smoke.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
