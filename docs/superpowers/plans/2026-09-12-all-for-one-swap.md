@@ -757,7 +757,7 @@ git commit -m "feat: plan economically viable consolidation routes"
 - Create: `tests/storage/atomic-json.test.ts`
 - Create: `tests/storage/journal-store.test.ts`
 
-- [ ] **Step 1: Write failing crash and monotonicity tests**
+- [x] **Step 1: Write failing crash and monotonicity tests**
 
 ```ts
 // tests/storage/journal-store.test.ts
@@ -772,19 +772,19 @@ it('does not transition backward or out of a terminal state', () => {
 
 Test `writeJsonAtomic()` with an injected rename failure and assert the previous destination remains parseable and unchanged.
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/storage`
 
 Expected: FAIL because storage modules do not exist.
 
-- [ ] **Step 3: Implement durable public persistence**
+- [x] **Step 3: Implement durable public persistence**
 
 Write JSON to a sibling path named `.<basename>.<pid>.<random>.tmp` using mode `0o600`, call file-handle `sync()`, close, rename to destination, then sync the parent directory on platforms that support it. Clean only the exact temporary path in `finally`. Run the object through `planSchema` or `journalSchema` and `redact()` before serialization.
 
 Plan IDs are SHA-256 over canonical JSON excluding volatile quote timestamps. Journals reference the plan ID and store transaction hashes before receipt polling. `transitionRoute()` enforces the schema's monotonic state graph.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/storage && npm run typecheck`
 
