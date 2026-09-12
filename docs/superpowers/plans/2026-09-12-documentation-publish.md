@@ -80,7 +80,7 @@ node dist/cli.js resume --plan plan.json --journal journal.json --timeout-second
 npm run smoke:mainnet
 ```
 
-Document all `.env.example` variables, explicitly say that `.env` is not auto-loaded, and show shell `export` examples with placeholder values only. State that planning uses Alchemy indexed discovery when `ALCHEMY_API_KEY` is present and allowlist-only RPC discovery otherwise; `LIFI_API_KEY` is optional; custom RPC variables override pinned public endpoints.
+Document all `.env.example` variables, explicitly say that `.env` is not auto-loaded, and show shell `export` examples with placeholder values only. State that planning uses Alchemy indexed discovery when `ALCHEMY_API_KEY` is present and allowlist-only RPC discovery otherwise; `LIFI_API_KEY` is present in the environment schema but is not attached by the current adapters; custom RPC variables override pinned public endpoints.
 
 State the exact support boundaries: Ethereum, Optimism, BNB Smart Chain, Polygon PoS, Base, and Arbitrum One; native assets are valid destinations; native USDC is available on the five registered Circle chains; official USDT is an Ethereum-only destination; BSC supports BNB as its destination in this release. State that LI.FI is the aggregator, Across is the only enabled bridge, 1inch and Odos are the allowed DEX tools, and Stargate remains disabled.
 

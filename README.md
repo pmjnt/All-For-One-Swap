@@ -60,7 +60,7 @@ The route boundary is intentionally narrow:
 - npm
 - Native gas on every source chain that will submit a transaction
 - A dedicated low-value EVM wallet for the first mainnet run
-- Optional Alchemy and LI.FI API keys
+- Optional Alchemy API key and custom RPC endpoints
 
 ## Installation
 
@@ -82,7 +82,7 @@ Available variables from `.env.example`:
 | Variable | Required | Purpose |
 |---|---:|---|
 | `ALCHEMY_API_KEY` | No | Enables indexed portfolio discovery. Without it, discovery scans only the pinned asset registry over RPC. |
-| `LIFI_API_KEY` | No | Authenticates LI.FI requests when you have a key. Public access is used otherwise. |
+| `LIFI_API_KEY` | No | Reserved in the environment schema. The current LI.FI adapters do not attach it and use public endpoints. |
 | `ETHEREUM_RPC_URL` | No | Overrides the pinned public Ethereum RPC. |
 | `OPTIMISM_RPC_URL` | No | Overrides the pinned public Optimism RPC. |
 | `BSC_RPC_URL` | No | Overrides the pinned public BSC RPC. |
@@ -94,7 +94,6 @@ Example with placeholder values:
 
 ```bash
 export ALCHEMY_API_KEY="your-alchemy-api-key"
-export LIFI_API_KEY="your-lifi-api-key"
 export BASE_RPC_URL="https://your-base-rpc.example"
 ```
 
@@ -210,6 +209,7 @@ The smoke test performs network reads and quote checks but must not be treated a
 - Unknown or unsupported tokens are skipped rather than sold.
 - Route selection considers eligible LI.FI responses at a point in time; prices, gas, liquidity, and delivery conditions can change.
 - Public RPCs can be rate-limited, unavailable, or inconsistent.
+- `LIFI_API_KEY` is not yet wired into request headers; current LI.FI requests use public access.
 - Small balances may be uneconomic after gas and bridge fees.
 - Cross-chain completion can take longer than the configured observation timeout.
 - This is mainnet-capable software, not financial advice or a custodial recovery service.
