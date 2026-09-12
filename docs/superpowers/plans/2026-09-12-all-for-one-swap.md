@@ -456,7 +456,7 @@ git commit -m "feat: enforce masked signing and secret redaction"
 - Create: `tests/providers/rpc.test.ts`
 - Create: `tests/providers/discovery.test.ts`
 
-- [ ] **Step 1: Write failing failover and allowlist-only tests**
+- [x] **Step 1: Write failing failover and allowlist-only tests**
 
 ```ts
 // tests/providers/discovery.test.ts
@@ -475,13 +475,13 @@ it('queries only registry assets when no indexer key exists', async () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/providers/rpc.test.ts tests/providers/discovery.test.ts`
 
 Expected: FAIL because RPC and discovery modules do not exist.
 
-- [ ] **Step 3: Implement chain-verified clients and multicall balances**
+- [x] **Step 3: Implement chain-verified clients and multicall balances**
 
 `createVerifiedPublicClient(chainId)` must try the configured private RPC first and the chain's reviewed public RPC fallback second. After connection, call `eth_chainId`; discard any transport returning a different chain. Use `multicall({ allowFailure: true })` for ERC-20 `balanceOf`, preserve individual failures as warnings, and read native balance separately.
 
@@ -496,7 +496,7 @@ export interface DiscoveryResult {
 
 Never convert a failed balance call into amount zero.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/providers/rpc.test.ts tests/providers/discovery.test.ts && npm run typecheck`
 
