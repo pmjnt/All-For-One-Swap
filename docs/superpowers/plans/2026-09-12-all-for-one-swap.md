@@ -60,7 +60,7 @@
 - Create: `src/cli.ts`
 - Create: `tests/cli/help.test.ts`
 
-- [ ] **Step 1: Initialize dependencies**
+- [x] **Step 1: Initialize dependencies**
 
 Run:
 
@@ -72,7 +72,7 @@ npm install --save-dev typescript @types/node vitest @vitest/coverage-v8 fast-ch
 
 Expected: `package-lock.json` is created and `npm audit` reports no unresolved critical vulnerability. If a critical advisory exists, stop and select a patched dependency before proceeding.
 
-- [ ] **Step 2: Write the failing CLI help test**
+- [x] **Step 2: Write the failing CLI help test**
 
 ```ts
 // tests/cli/help.test.ts
@@ -87,13 +87,13 @@ describe('CLI help', () => {
 });
 ```
 
-- [ ] **Step 3: Run the test and verify the expected failure**
+- [x] **Step 3: Run the test and verify the expected failure**
 
 Run: `npx vitest run tests/cli/help.test.ts`
 
 Expected: FAIL because `src/cli.ts` or `buildCli` does not exist.
 
-- [ ] **Step 4: Add strict project configuration and the minimal CLI**
+- [x] **Step 4: Add strict project configuration and the minimal CLI**
 
 Update the generated `package.json` with these module, binary, script, and engine fields while retaining the dependency sections written by npm:
 
@@ -170,7 +170,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `npm run check`
 
