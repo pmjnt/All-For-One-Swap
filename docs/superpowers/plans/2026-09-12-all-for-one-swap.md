@@ -514,7 +514,7 @@ git commit -m "feat: add verified RPC asset discovery"
 - Create: `tests/providers/alchemy.test.ts`
 - Create: `tests/fixtures/alchemy/partial-success.json`
 
-- [ ] **Step 1: Record a sanitized fixture and write the failing test**
+- [x] **Step 1: Record a sanitized fixture and write the failing test**
 
 ```ts
 // tests/providers/alchemy.test.ts
@@ -531,13 +531,13 @@ it('keeps successful balances and exposes partial network errors', () => {
 
 The fixture contains one native balance, one allowlisted ERC-20, one unknown ERC-20, and `error.partialErrors` for BNB Smart Chain. Replace wallet addresses and request IDs with deterministic test values before committing.
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/providers/alchemy.test.ts`
 
 Expected: FAIL because the normalizer does not exist.
 
-- [ ] **Step 3: Implement strict response parsing and discovery orchestration**
+- [x] **Step 3: Implement strict response parsing and discovery orchestration**
 
 Use a `.passthrough()` Zod schema only at the external response boundary. Require network, wallet address, token address/null, and hex balance for every normalized entry. Unknown token contracts remain report-only. Convert `partialErrors` into per-chain fallback requests and keep the final report partial when both Alchemy and RPC fail.
 
@@ -549,7 +549,7 @@ POST https://api.g.alchemy.com/data/v1/{ALCHEMY_API_KEY}/assets/tokens/balances/
 
 Do not include the endpoint URL containing the API key in thrown errors or debug data.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/providers/alchemy.test.ts tests/providers/discovery.test.ts && npm run typecheck`
 
