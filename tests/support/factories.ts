@@ -2,6 +2,7 @@ import type { Address } from 'viem';
 
 import type { NormalizedRoute } from '../../src/domain/model.js';
 import type { JournalV1, PlanV1 } from '../../src/domain/schemas.js';
+import type { PlanDependencies } from '../../src/cli/plan.js';
 
 export const TEST_WALLET = '0x0000000000000000000000000000000000000001' as Address;
 
@@ -62,5 +63,29 @@ export function validJournal(overrides: Partial<JournalV1> = {}): JournalV1 {
     updatedAt: '2026-09-12T00:00:00.000Z',
     routes: [],
     ...overrides,
+  };
+}
+
+export function makePlanDeps(options: {
+  partialChain?: 1 | 10 | 56 | 137 | 8453 | 42161;
+  save?: PlanDependencies['save'];
+} = {}): PlanDependencies {
+  return {
+    discover: async () => ({
+      balances: [{
+        amount: 1_000_000n,
+        assetId: '1:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      }],
+      completeChainIds: [1, 10, 137, 8453, 42161],
+      mode: options.partialChain ? 'PARTIAL' : 'ALLOWLIST_ONLY',
+      warnings: options.partialChain
+        ? [{ chainId: options.partialChain, code: 'RPC_CHAIN_FAILED', message: 'unavailable' }]
+        : [],
+    }),
+    getPrice: async () => ({ observedAt: '2026-09-12T00:00:00.000Z', priceUsd: '1' }),
+    getRoutes: async () => [validRoute()],
+    now: () => Date.parse('2026-09-12T00:00:00.000Z'),
+    report: () => undefined,
+    save: options.save ?? (async (_path, plan) => plan),
   };
 }

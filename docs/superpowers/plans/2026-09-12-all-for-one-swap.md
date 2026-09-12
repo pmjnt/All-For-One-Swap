@@ -805,7 +805,7 @@ git commit -m "feat: persist resumable plans and journals safely"
 - Modify: `tests/support/factories.ts`
 - Create: `tests/cli/plan.test.ts`
 
-- [ ] **Step 1: Write the failing command test**
+- [x] **Step 1: Write the failing command test**
 
 ```ts
 // tests/cli/plan.test.ts
@@ -825,13 +825,13 @@ it('creates a secret-free plan and reports incomplete discovery', async () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/cli/plan.test.ts`
 
 Expected: FAIL because `runPlan` does not exist.
 
-- [ ] **Step 3: Implement the command orchestration**
+- [x] **Step 3: Implement the command orchestration**
 
 Register:
 
@@ -845,7 +845,7 @@ Validate the destination strictly from `ASSETS`; reject arbitrary addresses and 
 
 Extend `tests/support/factories.ts` with `makePlanDeps()`, a complete in-memory dependency object whose discovery, route, policy, reporter, and store functions are typed against `runPlan`'s exported dependency interface.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run: `npx vitest run tests/cli/plan.test.ts tests/planning tests/providers && npm run typecheck`
 
