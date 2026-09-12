@@ -278,7 +278,7 @@ git commit -m "feat: define plans routes and journal schemas"
 - Create: `tests/config/registries.test.ts`
 - Create: `docs/registry-sources.md`
 
-- [ ] **Step 1: Write failing registry invariants**
+- [x] **Step 1: Write failing registry invariants**
 
 ```ts
 // tests/config/registries.test.ts
@@ -305,13 +305,13 @@ describe('pinned registries', () => {
 });
 ```
 
-- [ ] **Step 2: Run and verify failure**
+- [x] **Step 2: Run and verify failure**
 
 Run: `npx vitest run tests/config/registries.test.ts`
 
 Expected: FAIL because registry modules do not exist.
 
-- [ ] **Step 3: Add chain registry and registry record types**
+- [x] **Step 3: Add chain registry and registry record types**
 
 ```ts
 // src/config/chains.ts
@@ -331,7 +331,7 @@ Use `getAddress()` while constructing `ASSETS`; store `kind`, `symbol`, `decimal
 
 Start `PROTOCOLS` with LI.FI Diamond `0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE` only on networks confirmed by LI.FI deployment records. Permit only LI.FI tool IDs `across`, `stargateV2`, `1inch`, and `odos` for the first release. Pin selectors extracted from the reviewed LI.FI Diamond ABI; do not accept an unknown selector even when the entrypoint address matches.
 
-- [ ] **Step 4: Verify registry data against authoritative sources**
+- [x] **Step 4: Verify registry data against authoritative sources**
 
 `scripts/verify-registry.ts` must assert checksummed addresses, on-chain bytecode through each configured RPC, ERC-20 decimals, duplicate identities, evidence URLs, review dates, and destination coverage. It exits non-zero on any mismatch and never modifies the registry.
 
@@ -347,7 +347,7 @@ Run: `npx tsx scripts/verify-registry.ts`
 
 Expected: six chains are covered; every enabled contract has bytecode and matching decimals; unsupported chain/token pairs are absent rather than inferred by symbol.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `npx vitest run tests/config/registries.test.ts && npm run typecheck`
 

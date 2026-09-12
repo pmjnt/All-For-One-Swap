@@ -26,7 +26,7 @@ The source and destination registry contains exactly these mainnets:
 - Native ETH on Ethereum, Arbitrum, Base, and OP Mainnet.
 - Native POL on Polygon PoS.
 - Native BNB on BNB Smart Chain.
-- Native USDC contracts published by Circle for each supported chain.
+- Native USDC contracts on supported chains where Circle publishes an official mainnet address.
 - USDT only on a chain and contract explicitly published as supported by Tether. The MVP does not infer authenticity from the `USDT` symbol and does not treat bridge-wrapped variants as official USDT.
 
 Destination assets are selected by registry identifier, not an arbitrary contract address. Wrapped native assets such as WETH and WBNB are outside the initial destination registry.
